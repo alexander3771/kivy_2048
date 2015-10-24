@@ -2,8 +2,13 @@ from kivy.app import App
 from kivy.graphics import BorderImage, Color
 from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
+from kivy.properties import ListProperty, NumericProperty
 
 spacing = 15
+colors = ('EEE4DA', 'EDE0C8', 'F2B179', 'F59563',
+          'F67C5F', 'F65E3B', 'EDCF72', 'EDCC61',
+          'EDC850', 'EDC53F', 'EDC22E')
+tile_colors = {2**i: color for i, color in enumerate(colors, start=1)}
 
 
 def all_cells():
@@ -18,6 +23,8 @@ class GameApp(App):
     #     board.reset()
 
     def build(self):
+        board = self.root.ids.board
+        board.reset()
         return Board()
 
 
@@ -37,6 +44,12 @@ class Board(Widget):
             Color(*get_color_from_hex('CCC0B4'))
             for board_x, board_y in all_cells():
                 BorderImage(pos=self.cell_pos(board_x, board_y), size=self.cell_size, source='cell.png')
+                # tile = Tile(pos=self.cell_pos(board_x, board_y), size=self.cell_size)
+                # for board_x, board_y in all_cells():
+                #     tile = self.b[board_x][board_y]
+                #     if tile:
+                #         tile.resize()
+
 
     on_pos = resize
     on_size = resize
@@ -55,6 +68,29 @@ class Board(Widget):
 
     def can_move(self, board_x, board_y):
         return self.valid_cell(board_x, board_y) and self.b[board_x][board_y]
+
+
+class Tile(Widget):
+    font_size = NumericProperty(24)
+    number = NumericProperty(2)
+    color = ListProperty(get_color_from_hex(tile_colors[2]))
+    number_color = ListProperty(get_color_from_hex('776E65'))
+
+    def __init__(self, number=2, **kwargs):
+        super(Tile, self).__init__(**kwargs)
+        self.font_size = 0.5 * self.width
+        self.number = number
+        self.update_colors()
+
+    def update_colors(self):
+        self.color = get_color_from_hex(tile_colors[self.number])
+        if self.number > 4:
+            self.number_color = get_color_from_hex('F9F6F2')
+
+    def resize(self, pos, size):
+        self.pos = pos
+        self.size = size
+        self.font_size = 0.5 * self.width
 
 
 if __name__ == '__main__':
